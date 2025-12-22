@@ -665,6 +665,13 @@ void ProjectSettingsEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
+			if (!EditorNode::get_singleton()->is_connected(
+						"project_settings_changed",
+						callable_mp(this, &ProjectSettingsEditor::_update_action_map_editor))) {
+				EditorNode::get_singleton()->connect(
+						"project_settings_changed",
+						callable_mp(this, &ProjectSettingsEditor::_update_action_map_editor));
+			}
 			general_settings_inspector->edit(ps);
 			_update_action_map_editor();
 			_update_theme();

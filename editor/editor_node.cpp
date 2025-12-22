@@ -1537,6 +1537,7 @@ void EditorNode::_reload_modified_scenes() {
 
 void EditorNode::_reload_project_settings() {
 	ProjectSettings::get_singleton()->setup(ProjectSettings::get_singleton()->get_resource_path(), String(), true, true);
+	emit_signal(SNAME("project_settings_changed"));
 }
 
 void EditorNode::_vp_resized() {
