@@ -391,6 +391,12 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		return;
 	}
 
+	ScrollBar *v_scroll = log->get_v_scroll_bar();
+
+	const double prev_scroll = v_scroll->get_value();
+	const double prev_scroll_max = v_scroll->get_max();
+	const bool was_at_bottom = prev_scroll >= prev_scroll_max - 2.0;
+
 	// Only add the message to the log if it passes the filters.
 	if (!_check_display_message(p_message)) {
 		return;
@@ -459,6 +465,12 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 
 	while (log->get_paragraph_count() > line_limit + 1) {
 		log->remove_paragraph(0, true);
+	}
+
+	if (was_at_bottom) {
+		v_scroll->set_value(v_scroll->get_max());
+	} else {
+		v_scroll->set_value(prev_scroll);
 	}
 }
 
