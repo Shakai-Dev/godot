@@ -48,6 +48,12 @@ struct [[nodiscard]] Color {
 		// NOLINTEND(modernize-use-default-member-init)
 	};
 
+	enum ColorPrimaries {
+		COLOR_PRIMARIES_REC_709 = 0,
+		COLOR_PRIMARIES_P3_D65,
+		COLOR_PRIMARIES_REC_2020,
+	};
+
 	uint32_t to_rgba32() const;
 	uint32_t to_argb32() const;
 	uint32_t to_abgr32() const;
