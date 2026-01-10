@@ -3667,9 +3667,8 @@ void RenderingServer::set_render_loop_enabled(bool p_enabled) {
 	render_loop_enabled = p_enabled;
 }
 
-void RenderingServer::_update_color_primaries(){
-	color_primaries = ProjectSettings::get_singleton() -> get("rendering/color_management/color_primaries")
-
+void RenderingServer::_update_color_primaries() {
+	color_primaries = ProjectSettings::get_singleton()->get("rendering/color_management/color_primaries");
 }
 
 RenderingServer::RenderingServer() {
