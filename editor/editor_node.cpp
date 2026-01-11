@@ -1559,6 +1559,8 @@ void EditorNode::_reload_modified_scenes() {
 
 void EditorNode::_reload_project_settings() {
 	ProjectSettings::get_singleton()->setup(ProjectSettings::get_singleton()->get_resource_path(), String(), true, true);
+	notify_property_list_changed();
+	disk_changed->propagate_notification(NOTIFICATION_PROJECT_SETTINGS_RELOADED);
 }
 
 void EditorNode::_vp_resized() {

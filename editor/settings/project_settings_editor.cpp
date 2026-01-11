@@ -673,6 +673,10 @@ void ProjectSettingsEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
 		} break;
+
+		case NOTIFICATION_PROJECT_SETTINGS_RELOADED: {
+			_update_action_map_editor();
+		} break;
 	}
 }
 
