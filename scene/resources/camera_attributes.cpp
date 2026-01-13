@@ -133,7 +133,7 @@ void CameraAttributes::set_motion_blur_quality(RenderingServer::MotionBlurQualit
 	emit_changed();
 }
 
-RenderingServer::MotionBlurQuality get_motion_blur_quality() const {
+RenderingServer::MotionBlurQuality CameraAttributes::get_motion_blur_quality() const {
 	return motion_blur_quality;
 }
 
