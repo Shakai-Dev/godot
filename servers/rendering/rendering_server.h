@@ -1398,6 +1398,12 @@ public:
 
 	virtual RID camera_attributes_create() = 0;
 
+	enum MotionBlurQuality {
+		MOTION_BLUR_QUALITY_LOW,
+		MOTION_BLUR_QUALITY_MEDIUM,
+		MOTION_BLUR_QUALITY_HIGH,
+	};
+
 	enum DOFBlurQuality {
 		DOF_BLUR_QUALITY_VERY_LOW,
 		DOF_BLUR_QUALITY_LOW,

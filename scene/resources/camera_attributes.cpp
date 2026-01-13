@@ -91,6 +91,53 @@ float CameraAttributes::get_auto_exposure_scale() const {
 	return auto_exposure_scale;
 }
 
+void CameraAttributes::set_motion_blur_enabled(bool p_enabled) {
+	motion_blur_enabled = p_enabled;
+	notify_property_list_changed();
+}
+
+bool CameraAttributes::is_motion_blur_enabled() const {
+	return motion_blur_enabled;
+}
+
+void CameraAttributes::set_motion_blur_shutter_speed(float p_motion_blur_shutter_speed) {
+	p_motion_blur_shutter_speed = MAX(p_motion_blur_shutter_speed, 0.0f);
+	if (motion_blur_shutter_speed == p_motion_blur_shutter_speed) {
+		return;
+	}
+	motion_blur_shutter_speed = p_motion_blur_shutter_speed;
+	emit_changed();
+}
+
+float CameraAttributes::get_motion_blur_shutter_speed() const {
+	return motion_blur_shutter_speed;
+}
+
+void CameraAttributes::set_motion_blur_sample_count(int p_sample_count) {
+	p_sample_count = CLAMP(p_sample_count, 1, 64);
+	if (motion_blur_sample_count == p_sample_count) {
+		return;
+	}
+	motion_blur_sample_count = p_sample_count;
+	emit_changed();
+}
+
+int CameraAttributes::get_motion_blur_sample_count() const {
+	return motion_blur_sample_count;
+}
+
+void CameraAttributes::set_motion_blur_quality(MotionBlurQuality p_quality) {
+	if (motion_blur_quality == p_quality) {
+		return;
+	}
+	motion_blur_quality = p_quality;
+	emit_changed();
+}
+
+MotionBlurQuality get_motion_blur_quality() const {
+	return motion_blur_quality;
+}
+
 RID CameraAttributes::get_rid() const {
 	return camera_attributes;
 }
@@ -123,6 +170,15 @@ void CameraAttributes::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_auto_exposure_scale", "exposure_grey"), &CameraAttributes::set_auto_exposure_scale);
 	ClassDB::bind_method(D_METHOD("get_auto_exposure_scale"), &CameraAttributes::get_auto_exposure_scale);
 
+	ClassDB::bind_method(D_METHOD("set_motion_blur_enabled", "enabled"), &CameraAttributes::set_motion_blur_enabled);
+	ClassDB::bind_method(D_METHOD("is_motion_blur_enabled"), &CameraAttributes::is_motion_blur_enabled);
+	ClassDB::bind_method(D_METHOD("set_motion_blur_shutter_speed", "speed"), &CameraAttributes::set_motion_blur_shutter_speed);
+	ClassDB::bind_method(D_METHOD("get_motion_blur_shutter_speed"), &CameraAttributes::get_motion_blur_shutter_speed);
+	ClassDB::bind_method(D_METHOD("set_motion_blur_sample_count", "count"), &CameraAttributes::set_motion_blur_sample_count);
+	ClassDB::bind_method(D_METHOD("get_motion_blur_sample_count"), &CameraAttributes::get_motion_blur_sample_count);
+	ClassDB::bind_method(D_METHOD("set_motion_blur_quality", "quality"), &CameraAttributes::set_motion_blur_quality);
+	ClassDB::bind_method(D_METHOD("get_motion_blur_quality"), &CameraAttributes::get_motion_blur_quality);
+
 	ADD_GROUP("Exposure", "exposure_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "exposure_sensitivity", PROPERTY_HINT_RANGE, "0.1,32000.0,0.1,suffix:ISO"), "set_exposure_sensitivity", "get_exposure_sensitivity");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "exposure_multiplier", PROPERTY_HINT_RANGE, "0.0,8.0,0.001,or_greater"), "set_exposure_multiplier", "get_exposure_multiplier");
@@ -131,6 +187,15 @@ void CameraAttributes::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_exposure_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_auto_exposure_enabled", "is_auto_exposure_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_scale", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_auto_exposure_scale", "get_auto_exposure_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_speed", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_auto_exposure_speed", "get_auto_exposure_speed");
+
+	BIND_ENUM_CONSTANT(MOTION_BLUR_QUALITY_LOW);
+	BIND_ENUM_CONSTANT(MOTION_BLUR_QUALITY_MEDIUM);
+	BIND_ENUM_CONSTANT(MOTION_BLUR_QUALITY_HIGH);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "motion_blur_enabled"), "set_motion_blur_enabled", "is_motion_blur_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_shutter_speed", PROPERTY_HINT_RANGE, "0.0,1.0,0.001"), "set_motion_blur_shutter_speed", "get_motion_blur_shutter_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "motion_blur_sample_count", PROPERTY_HINT_RANGE, "1,64,1"), "set_motion_blur_sample_count", "get_motion_blur_sample_count");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "motion_blur_quality", PROPERTY_HINT_ENUM, "Low,Medium,High"), "set_motion_blur_quality", "get_motion_blur_quality");
 }
 
 CameraAttributes::CameraAttributes() {
