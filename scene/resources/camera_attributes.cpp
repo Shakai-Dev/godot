@@ -189,9 +189,9 @@ void CameraAttributes::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_scale", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_auto_exposure_scale", "get_auto_exposure_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_speed", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_auto_exposure_speed", "get_auto_exposure_speed");
 
-	BIND_ENUM_CONSTANT(RenderingServer::MotionBlurQuality::MOTION_BLUR_QUALITY_LOW);
-	BIND_ENUM_CONSTANT(RenderingServer::MotionBlurQuality::MOTION_BLUR_QUALITY_MEDIUM);
-	BIND_ENUM_CONSTANT(RenderingServer::MotionBlurQuality::MOTION_BLUR_QUALITY_HIGH);
+	BIND_ENUM_CONSTANT(MOTION_BLUR_QUALITY_LOW);
+	BIND_ENUM_CONSTANT(MOTION_BLUR_QUALITY_MEDIUM);
+	BIND_ENUM_CONSTANT(MOTION_BLUR_QUALITY_HIGH);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "motion_blur_enabled"), "set_motion_blur_enabled", "is_motion_blur_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_shutter_speed", PROPERTY_HINT_RANGE, "0.0,1.0,0.001"), "set_motion_blur_shutter_speed", "get_motion_blur_shutter_speed");
