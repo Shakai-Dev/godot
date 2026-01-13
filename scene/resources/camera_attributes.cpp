@@ -31,7 +31,6 @@
 #include "camera_attributes.h"
 
 #include "core/config/project_settings.h"
-#include "servers/rendering/rendering_server.h"
 
 void CameraAttributes::set_exposure_multiplier(float p_multiplier) {
 	exposure_multiplier = p_multiplier;
