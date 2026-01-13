@@ -82,8 +82,8 @@ public:
 	float get_motion_blur_shutter_speed() const;
 	void set_motion_blur_sample_count(int p_sample_count);
 	int get_motion_blur_sample_count() const;
-	void set_motion_blur_quality(RenderingServer::MotionBlurQuality p_quality);
-	RenderingServer::MotionBlurQuality get_motion_blur_quality() const;
+	void set_motion_blur_quality(int p_quality);
+	int get_motion_blur_quality() const;
 
 	CameraAttributes();
 	~CameraAttributes();

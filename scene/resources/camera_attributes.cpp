@@ -125,16 +125,18 @@ int CameraAttributes::get_motion_blur_sample_count() const {
 	return motion_blur_sample_count;
 }
 
-void CameraAttributes::set_motion_blur_quality(RenderingServer::MotionBlurQuality p_quality) {
-	if (motion_blur_quality == p_quality) {
+void CameraAttributes::set_motion_blur_quality(int p_quality) {
+	p_quality = CLAMP(p_quality, RenderingServer::MOTION_BLUR_QUALITY_LOW, RenderingServer::MOTION_BLUR_QUALITY_HIGH);
+	RenderingServer::MotionBlurQuality quality = (RenderingServer::MotionBlurQuality)p_quality;
+	if (motion_blur_quality == quality) {
 		return;
 	}
-	motion_blur_quality = p_quality;
+	motion_blur_quality = quality;
 	emit_changed();
 }
 
-RenderingServer::MotionBlurQuality CameraAttributes::get_motion_blur_quality() const {
-	return motion_blur_quality;
+int CameraAttributes::get_motion_blur_quality() const {
+	return int(motion_blur_quality);
 }
 
 RID CameraAttributes::get_rid() const {
