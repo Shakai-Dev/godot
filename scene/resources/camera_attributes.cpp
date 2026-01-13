@@ -136,7 +136,7 @@ void CameraAttributes::set_motion_blur_quality(int p_quality) {
 }
 
 int CameraAttributes::get_motion_blur_quality() const {
-	return int(motion_blur_quality);
+	return motion_blur_quality;
 }
 
 RID CameraAttributes::get_rid() const {

@@ -58,7 +58,7 @@ protected:
 	bool motion_blur_enabled = false;
 	float motion_blur_shutter_speed = 0.05f;
 	int motion_blur_sample_count = 8;
-	RenderingServer::MotionBlurQuality motion_blur_quality = RenderingServer::MotionBlurQuality::MOTION_BLUR_QUALITY_MEDIUM;
+	int motion_blur_quality = RenderingServer::MotionBlurQuality::MOTION_BLUR_QUALITY_MEDIUM;
 
 public:
 	virtual RID get_rid() const override;
