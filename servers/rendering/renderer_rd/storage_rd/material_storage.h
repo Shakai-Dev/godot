@@ -221,6 +221,7 @@ private:
 		ShaderType type;
 		HashMap<StringName, HashMap<int, RID>> default_texture_parameter;
 		HashSet<Material *> owners;
+		Mutex owners_mutex;
 		bool embedded = false;
 	};
 
