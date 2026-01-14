@@ -39,6 +39,7 @@ class CameraAttributes : public Resource {
 
 private:
 	RID camera_attributes;
+	MotionBlurQuality motion_blur_quality = MOTION_BLUR_QUALITY_MEDIUM;
 
 protected:
 	static void _bind_methods();
@@ -58,7 +59,6 @@ protected:
 	bool motion_blur_enabled = false;
 	float motion_blur_shutter_speed = 0.05f;
 	int motion_blur_sample_count = 8;
-	int motion_blur_quality = RenderingServer::MotionBlurQuality::MOTION_BLUR_QUALITY_MEDIUM;
 
 public:
 	virtual RID get_rid() const override;
@@ -76,14 +76,20 @@ public:
 	void set_auto_exposure_scale(float p_auto_exposure_scale);
 	float get_auto_exposure_scale() const;
 
+	enum MotionBlurQuality {
+		MOTION_BLUR_QUALITY_LOW,
+		MOTION_BLUR_QUALITY_MEDIUM,
+		MOTION_BLUR_QUALITY_HIGH,
+	};
+
 	void set_motion_blur_enabled(bool p_enabled);
 	bool is_motion_blur_enabled() const;
 	void set_motion_blur_shutter_speed(float p_motion_blur_shutter_speed);
 	float get_motion_blur_shutter_speed() const;
 	void set_motion_blur_sample_count(int p_sample_count);
 	int get_motion_blur_sample_count() const;
-	void set_motion_blur_quality(int p_quality);
-	int get_motion_blur_quality() const;
+	void set_motion_blur_quality(MotionBlurQuality p_quality);
+	MotionBlurQuality get_motion_blur_quality() const;
 
 	CameraAttributes();
 	~CameraAttributes();
