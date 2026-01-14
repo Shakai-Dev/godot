@@ -78,8 +78,6 @@ public:
 		MOTION_BLUR_QUALITY_HIGH,
 	};
 
-	VARIANT_ENUM_CAST(CameraAttributes::MotionBlurQuality);
-
 	void set_motion_blur_enabled(bool p_enabled);
 	bool is_motion_blur_enabled() const;
 	void set_motion_blur_shutter_speed(float p_motion_blur_shutter_speed);
@@ -96,6 +94,8 @@ private:
 	RID camera_attributes;
 	CameraAttributes::MotionBlurQuality motion_blur_quality = MOTION_BLUR_QUALITY_MEDIUM;
 };
+
+VARIANT_ENUM_CAST(CameraAttributes::MotionBlurQuality);
 
 class CameraAttributesPractical : public CameraAttributes {
 	GDCLASS(CameraAttributesPractical, CameraAttributes);
