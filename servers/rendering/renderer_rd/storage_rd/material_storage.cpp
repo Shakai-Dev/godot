@@ -2290,7 +2290,7 @@ void MaterialStorage::material_set_shader(RID p_material, RID p_shader) {
 
 	if (material->shader) {
 		{
-			MutexLock lock_old(material->shader->owners_mutex);
+			MutexLock lock_old(*material->shader->owners_mutex);
 			material->shader->owners.erase(material);
 		}
 		material->shader = nullptr;
@@ -2309,7 +2309,7 @@ void MaterialStorage::material_set_shader(RID p_material, RID p_shader) {
 	material->shader_type = shader->type;
 	material->shader_id = p_shader.get_local_index();
 	{
-		MutexLock lock_new(shader->owners_mutex);
+		MutexLock lock_new(*shader->owners_mutex);
 		shader->owners.insert(material);
 	}
 
