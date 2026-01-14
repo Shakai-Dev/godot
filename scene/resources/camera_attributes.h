@@ -78,6 +78,8 @@ public:
 		MOTION_BLUR_QUALITY_HIGH,
 	};
 
+	VARIANT_ENUM_CAST(CameraAttributes::MotionBlurQuality);
+
 	void set_motion_blur_enabled(bool p_enabled);
 	bool is_motion_blur_enabled() const;
 	void set_motion_blur_shutter_speed(float p_motion_blur_shutter_speed);
