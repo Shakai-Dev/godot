@@ -37,10 +37,6 @@
 class CameraAttributes : public Resource {
 	GDCLASS(CameraAttributes, Resource);
 
-private:
-	RID camera_attributes;
-	MotionBlurQuality motion_blur_quality = MOTION_BLUR_QUALITY_MEDIUM;
-
 protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
@@ -88,11 +84,15 @@ public:
 	float get_motion_blur_shutter_speed() const;
 	void set_motion_blur_sample_count(int p_sample_count);
 	int get_motion_blur_sample_count() const;
-	void set_motion_blur_quality(MotionBlurQuality p_quality);
-	MotionBlurQuality get_motion_blur_quality() const;
+	void set_motion_blur_quality(CameraAttributes::MotionBlurQuality p_quality);
+	CameraAttributes::MotionBlurQuality get_motion_blur_quality() const;
 
 	CameraAttributes();
 	~CameraAttributes();
+
+private:
+	RID camera_attributes;
+	CameraAttributes::MotionBlurQuality motion_blur_quality = MOTION_BLUR_QUALITY_MEDIUM;
 };
 
 class CameraAttributesPractical : public CameraAttributes {

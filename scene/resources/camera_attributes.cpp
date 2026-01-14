@@ -125,7 +125,7 @@ int CameraAttributes::get_motion_blur_sample_count() const {
 	return motion_blur_sample_count;
 }
 
-void CameraAttributes::set_motion_blur_quality(MotionBlurQuality p_quality) {
+void CameraAttributes::set_motion_blur_quality(CameraAttributes::MotionBlurQuality p_quality) {
 	if (motion_blur_quality == p_quality) {
 		return;
 	}
