@@ -189,6 +189,7 @@ void CameraAttributes::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_scale", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_auto_exposure_scale", "get_auto_exposure_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_speed", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_auto_exposure_speed", "get_auto_exposure_speed");
 
+	ADD_GROUP("Motion Blur", "motion_blur_");
 	BIND_ENUM_CONSTANT(MOTION_BLUR_QUALITY_LOW);
 	BIND_ENUM_CONSTANT(MOTION_BLUR_QUALITY_MEDIUM);
 	BIND_ENUM_CONSTANT(MOTION_BLUR_QUALITY_HIGH);
