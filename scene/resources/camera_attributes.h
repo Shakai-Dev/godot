@@ -55,6 +55,7 @@ protected:
 	bool motion_blur_enabled = false;
 	float motion_blur_shutter_speed = 0.05f;
 	int motion_blur_sample_count = 8;
+	float motion_blur_intensity = 0.5f;
 
 public:
 	virtual RID get_rid() const override;
@@ -86,6 +87,8 @@ public:
 	int get_motion_blur_sample_count() const;
 	void set_motion_blur_quality(int p_quality);
 	int get_motion_blur_quality() const;
+	void set_motion_blur_intensity(float p_intensity);
+	float get_motion_blur_intensity() const;
 
 	CameraAttributes();
 	~CameraAttributes();
