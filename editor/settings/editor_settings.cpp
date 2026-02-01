@@ -350,6 +350,21 @@ void EditorSettings::_add_property_info_bind(const Dictionary &p_info) {
 	add_property_hint(pinfo);
 }
 
+void ProjectSettings::set_restart_if_changed(const String &p_name, bool p_restart) {
+	ERR_FAIL_COND_MSG(!props.has(p_name), vformat("Request for nonexistent project setting: '%s'.", p_name));
+	props[p_name].restart_if_changed = p_restart;
+}
+
+void ProjectSettings::set_as_basic(const String &p_name, bool p_basic) {
+	ERR_FAIL_COND_MSG(!props.has(p_name), vformat("Request for nonexistent project setting: '%s'.", p_name));
+	props[p_name].basic = p_basic;
+}
+
+void ProjectSettings::set_as_internal(const String &p_name, bool p_internal) {
+	ERR_FAIL_COND_MSG(!props.has(p_name), vformat("Request for nonexistent project setting: '%s'.", p_name));
+	props[p_name].internal = p_internal;
+}
+
 // Default configs
 bool EditorSettings::has_default_value(const String &p_setting) const {
 	_THREAD_SAFE_METHOD_

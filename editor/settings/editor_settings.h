@@ -115,6 +115,9 @@ private:
 	void _initial_set(const StringName &p_name, const Variant &p_value, bool p_basic = false);
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _add_property_info_bind(const Dictionary &p_info);
+	void set_as_basic(const String &p_name, bool p_basic);
+	void set_as_internal(const String &p_name, bool p_internal);
+	void set_restart_if_changed(const String &p_name, bool p_restart);
 	bool _property_can_revert(const StringName &p_name) const;
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
