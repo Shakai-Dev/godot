@@ -465,7 +465,7 @@ void Environment::_update_ssil() {
 			ssil_normal_rejection);
 }
 
-// DynamicGI
+// DynamicGI (HDDAGI)
 
 void Environment::set_dynamic_gi_enabled(bool p_enabled) {
 	dynamic_gi_enabled = p_enabled;
