@@ -441,6 +441,7 @@ private:
 			float y_mult;
 
 			uint32_t probe_axis_size[3];
+			uint32_t probe_cell_size;
 			uint32_t store_ambient_texture;
 
 			float sky_irradiance_border_size[2];
@@ -593,11 +594,13 @@ public:
 
 		struct Cascade {
 			struct UBO {
-				float offset[3];
-				float to_cell;
-				int32_t region_world_offset[3];
-				uint32_t pad;
-				float pad2[4];
+				float offset[3]; // 12 bytes
+				float to_cell; // 4 bytes
+				int32_t region_world_offset[3]; // 12 bytes
+				float to_probe; // 4 bytes
+				float exposure_normalization; // 12 bytes
+				float pad2[4]; // 4 bytes
+				// Total number of bytes is 48 (aligned)
 			};
 
 			//cascade blocks are full-size for volume (128^3), half size for albedo/emission
@@ -783,6 +786,10 @@ public:
 		float esm_strength;
 
 		uint32_t pad3[4];
+				
+		uint32_t probe_cell_size;
+		uint32_t pad_hd[3]; // Keep 16 byte alignment
+
 
 		struct ProbeCascadeData {
 			float position[3]; //offset of (0,0,0) in world coordinates

@@ -62,7 +62,8 @@ struct CascadeData {
 	vec3 offset; //offset of (0,0,0) in world coordinates
 	float to_cell; // 1/bounds * grid_size
 	ivec3 region_world_offset;
-	uint pad;
+	float to_probe;
+	float exposure_normalization;
 	vec4 pad2;
 };
 
@@ -122,6 +123,7 @@ layout(push_constant, std430) uniform Params {
 	float y_mult;
 
 	ivec3 probe_axis_size;
+	uint probe_cell_size;
 	bool store_ambient_texture;
 
 	vec2 sky_irradiance_border_size;
@@ -387,7 +389,7 @@ const uint wrap_neighbours[(LIGHTPROBE_OCT_SIZE + 2) * (LIGHTPROBE_OCT_SIZE + 2)
 #endif
 
 shared uvec3 neighbours_accum[LIGHTPROBE_OCT_SIZE * LIGHTPROBE_OCT_SIZE];
-shared vec3 neighbours[LIGHTPROBE_OCT_SIZE * LIGHTPROBE_OCT_SIZE];
+shared vec3 neighbors[LIGHTPROBE_OCT_SIZE * LIGHTPROBE_OCT_SIZE];
 shared uvec3 ambient_accum;
 shared int probe_history_index;
 
@@ -508,9 +510,13 @@ void main() {
 		return; // All threads return, so no barrier will be executed.
 	}
 
-	float probe_cell_size = float(params.grid_size.x) / float(params.probe_axis_size.x - 1) / cascades.data[params.cascade].to_cell;
+	// The cell size will come from PushConstants (either 4, 8 or 16)
+	float probe_spacing = float(params.probe_cell_size) / cascades.data[params.cascade].to_cell;
 
-	ray_pos = cascades.data[params.cascade].offset + vec3(probe_cell) * probe_cell_size;
+	// Calculate the world space starting point of the probe
+	// to_probe is (1.0 / (voxel_cell_size * probe_density_settings))
+	ray_pos = cascades.data[params.cascade].offset + (vec3(probe_cell) / cascades.data[params.cascade].to_probe);
+
 
 	// Ensure a unique hash that includes the probe world position, the local octahedron pixel, and the history frame index
 	uvec3 h3 = hash3(uvec3((uvec3(probe_world_pos) * LIGHTPROBE_OCT_SIZE * LIGHTPROBE_OCT_SIZE + uvec3(probe_index)) * uvec3(params.history_size) + uvec3(probe_history_index)));
@@ -523,6 +529,10 @@ void main() {
 
 	// Apply bias (by a cell)
 	float bias = params.ray_bias;
+	// For HD probes, we scale by the cell size ratio
+	if (params.probe_cell_size < 16) {
+		bias *= (float(params.probe_cell_size) / 16.0);
+	}
 	vec3 abs_ray_dir = abs(ray_dir);
 	ray_pos += ray_dir * 1.0 / max(abs_ray_dir.x, max(abs_ray_dir.y, abs_ray_dir.z)) * bias / cascades.data[params.cascade].to_cell;
 
@@ -657,6 +667,36 @@ void main() {
 	groupMemoryBarrier();
 	barrier();
 
+	if (probe_history_index >= 0) {
+		// Convert the accumulated fixed point light back to float
+		vec3 accumulated_light = vec3(neighbours_accum[probe_index]) / float(1 << FP_BITS);
+
+		// Encode it to RGBE
+		// This is stored in lightprobe_texture_data (binding 5)
+		uint encoded_light = rgbe_encode(accumulated_light);
+
+		// Store it to history
+		// cache_texture_pos uses: (oct_pos, cascade_index * history_size + current_frame)
+		imageStore(lightprobe_texture_data, cache_texture_pos, uvec4(encoded_light));
+
+		// Prepare for moving average
+		// Now that we've stored the raw hit, we blend it with the persistent moving average
+		ivec3 diffuse_pos = ivec3(probe_texture_pos.xy * LIGHTPROBE_OCT_SIZE + local_pos, params.cascade);
+		uint prev_avg_rgbe = imageLoad(lightprobe_moving_average, diffuse_pos).r;
+		vec3 prev_avg_light = rgbe_decode(prev_avg_rgbe);
+
+		// Use a smaller lerp weight for HD to prevent "boiling"
+		float lerp_weight = 1.0 / float(params.history_size);
+		vec3 blended_light = mix(prev_avg_light, accumulated_light, lerp_weight);
+
+		// Store the final blended result
+		imageStore(lightprobe_moving_average, diffuse_pos, uvec4(rgbe_encode(blended_light)));
+
+		// Final output for the actual lighting pass
+		if (params.store_ambient_texture) {
+			imageStore(lightprobe_ambient_tex, diffuse_pos, vec4(blended_light, 1.0));
+		}
+	}
 	// convert back to float and do moving average
 
 #ifdef TRACE_SUBPIXEL

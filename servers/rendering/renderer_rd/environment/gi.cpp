@@ -519,9 +519,9 @@ void GI::HDDAGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_r
 		tf_lightprobes.shareable_formats.push_back(RD::DATA_FORMAT_R32_UINT);
 		tf_lightprobes.shareable_formats.push_back(RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32);
 
-		lightprobe_specular_data = create_clear_texture(tf_lightprobes, String("HDDAGI Lighprobe Specular"));
-		lightprobe_diffuse_data = create_clear_texture(tf_lightprobes, String("HDDAGI Lighprobe Diffuse"));
-		lightprobe_diffuse_filter_data = create_clear_texture(tf_lightprobes, String("HDDAGI Lighprobe Diffuse Filtered"));
+		lightprobe_specular_data = create_clear_texture(tf_lightprobes, String("HDDAGI Lightprobe Specular"));
+		lightprobe_diffuse_data = create_clear_texture(tf_lightprobes, String("HDDAGI Lightprobe Diffuse"));
+		lightprobe_diffuse_filter_data = create_clear_texture(tf_lightprobes, String("HDDAGI Lightprobe Diffuse Filtered"));
 
 		RD::TextureView tv;
 		tv.format_override = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
@@ -535,20 +535,20 @@ void GI::HDDAGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_r
 		tf_cache_data.height = (PROBE_DIVISOR.y + 1) * (PROBE_DIVISOR.z + 1) * LIGHTPROBE_OCT_SIZE;
 		tf_cache_data.array_layers *= frames_to_converge;
 		tf_cache_data.shareable_formats.clear();
-		lightprobe_hit_cache_data = create_clear_texture(tf_cache_data, String("HDDAGI Lighprobe Hit Cache"));
+		lightprobe_hit_cache_data = create_clear_texture(tf_cache_data, String("HDDAGI Lightprobe Hit Cache"));
 
 		tf_cache_data.format = RD::DATA_FORMAT_R16_UINT;
-		lightprobe_hit_cache_version_data = create_clear_texture(tf_cache_data, String("HDDAGI Lighprobe Hit Cache Version"));
+		lightprobe_hit_cache_version_data = create_clear_texture(tf_cache_data, String("HDDAGI Lightprobe Hit Cache Version"));
 
 		{
 			tf_cache_data.format = RD::DATA_FORMAT_R32_UINT;
 
-			lightprobe_moving_average_history = create_clear_texture(tf_cache_data, String("HDDAGI Lighprobe Moving Average History"));
+			lightprobe_moving_average_history = create_clear_texture(tf_cache_data, String("HDDAGI Lightprobe Moving Average History"));
 
 			RD::TextureFormat tf_moving_average = tf_cache_data;
 			tf_moving_average.width *= 3; // no RGB32 UI so..
 			tf_moving_average.array_layers = cascades.size(); // Return to just cascades, no history.
-			lightprobe_moving_average = create_clear_texture(tf_moving_average, String("HDDAGI Lighprobe Moving Average"));
+			lightprobe_moving_average = create_clear_texture(tf_moving_average, String("HDDAGI Lightprobe Moving Average"));
 		}
 
 		RD::TextureFormat tf_ambient = tf_lightprobes;
@@ -859,14 +859,22 @@ void GI::HDDAGI::update_light() {
 void GI::HDDAGI::update_probes(RID p_env, SkyRD::Sky *p_sky, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform) {
 	RD::get_singleton()->draw_command_begin_label("HDDAGI Update Probes");
 
+	// Get density from storage
+	int cell_size = renderer_scene_render->environment_get_hddagi_probe_cell_size(p_env);
+
+	// Calculate dispatch
+	// (128 / 4) + 1 = 33 for HD (High Density) Probes
+	int probes_per_axis = (CASCADE_SIZE / cell_size) + 1;
+
 	HDDAGIShader::IntegratePushConstant push_constant;
 	push_constant.grid_size[0] = cascade_size[0];
 	push_constant.grid_size[1] = cascade_size[1];
 	push_constant.grid_size[2] = cascade_size[2];
 	push_constant.max_cascades = cascades.size();
-	push_constant.probe_axis_size[0] = cascade_size[0] / REGION_CELLS + 1;
-	push_constant.probe_axis_size[1] = cascade_size[1] / REGION_CELLS + 1;
-	push_constant.probe_axis_size[2] = cascade_size[2] / REGION_CELLS + 1;
+	push_constant.probe_cell_size = (uint32_t)cell_size;
+	push_constant.probe_axis_size[0] = probes_per_axis;
+	push_constant.probe_axis_size[1] = probes_per_axis;
+	push_constant.probe_axis_size[2] = probes_per_axis;
 
 	static const uint32_t frames_to_update_table[RS::ENV_HDDAGI_INACTIVE_PROBE_MAX] = {
 		1, 2, 4, 8
@@ -885,7 +893,7 @@ void GI::HDDAGI::update_probes(RID p_env, SkyRD::Sky *p_sky, uint32_t p_view_cou
 	push_constant.y_mult = y_mult;
 
 	RID integrate_sky_uniform_set = gi->hddagi_shader.integrate_default_sky_uniform_set;
-	int32_t probe_divisor = REGION_CELLS;
+	int32_t probe_divisor = cell_size;
 
 	if (reads_sky && p_env.is_valid()) {
 		push_constant.sky_energy = RendererSceneRenderRD::get_singleton()->environment_get_bg_energy_multiplier(p_env);
@@ -972,27 +980,32 @@ void GI::HDDAGI::update_probes(RID p_env, SkyRD::Sky *p_sky, uint32_t p_view_cou
 
 		for (uint32_t i = 0; i < cascades.size(); i++) {
 			push_constant.cascade = i;
-			push_constant.world_offset[0] = cascades[i].position.x / probe_divisor;
-			push_constant.world_offset[1] = cascades[i].position.y / probe_divisor;
-			push_constant.world_offset[2] = cascades[i].position.z / probe_divisor;
+						push_constant.motion_accum = cascades[i].motion_accum;
+			cascades[i].motion_accum = 0; // Clear after use
 
-			for (uint32_t j = 0; j < p_view_count; j++) {
-				int buffer_index = j * cascades.size() + i;
 
-				if (cascades[i].integrate_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(cascades[i].integrate_uniform_set)) {
-					Vector<RD::Uniform> uniforms;
-					uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, lightprobe_camera_visibility_map));
-					uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 2, lightprobe_camera_buffers[buffer_index]));
+			// Ensure the shader knows exactly how many probes are in this density
+			push_constant.probe_axis_size[0] = probes_per_axis;
+			push_constant.probe_axis_size[1] = probes_per_axis;
+			push_constant.probe_axis_size[2] = probes_per_axis;
 
-					cascades[i].integrate_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->hddagi_shader.integrate.version_get_shader(gi->hddagi_shader.integrate_shader, HDDAGIShader::INTEGRATE_MODE_CAMERA_VISIBILITY), 0);
-				}
+			// Use the dynamic cell_size for world scrolling alignment
+			push_constant.world_offset[0] = cascades[i].position.x / cell_size;
+			push_constant.world_offset[1] = cascades[i].position.y / cell_size;
+			push_constant.world_offset[2] = cascades[i].position.z / cell_size;
 
-				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[i].integrate_uniform_set, 0);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, integrate_process_uniform_set, 0);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, integrate_sky_uniform_set, 1);
 
-				RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(HDDAGIShader::IntegratePushConstant));
-				Vector3i dispatch_threads = cascade_size / REGION_CELLS;
-				RD::get_singleton()->compute_list_dispatch_threads(compute_list, dispatch_threads.x, dispatch_threads.y, dispatch_threads.z);
-			}
+			// Pass the constants (contains the HD cell_size and the updated probe_axis_size)
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(HDDAGIShader::IntegratePushConstant));
+
+			// The dispatch
+			// X: Number of probes on X axis
+			// Y: Total unrolled probes (Y * Z)
+			// Z: 1 (handled by outer cascade loop)
+			// Each WorkGroup handles a 5x5 (LIGHTPROBE_OCT_SIZE) octahedron
+			RD::get_singleton()->compute_list_dispatch(compute_list, probes_per_axis, probes_per_axis * probes_per_axis, 1);
 		}
 
 		RD::get_singleton()->compute_list_end();
@@ -1178,7 +1191,7 @@ void GI::HDDAGI::update_cascades() {
 		cascade_data[i].region_world_offset[0] = cascades[i].position.x / REGION_CELLS;
 		cascade_data[i].region_world_offset[1] = cascades[i].position.y / REGION_CELLS;
 		cascade_data[i].region_world_offset[2] = cascades[i].position.z / REGION_CELLS;
-		cascade_data[i].pad = 0;
+		cascade_data[i].exposure_normalization = 0;
 	}
 
 	RD::get_singleton()->buffer_update(cascades_ubo, 0, sizeof(HDDAGI::Cascade::UBO) * HDDAGI::MAX_CASCADES, cascade_data);
@@ -2771,8 +2784,8 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				push_constant.on_mipmap = false;
 				push_constant.propagation = gi->voxel_gi_get_propagation(probe);
 				push_constant.cell_size = cell_size;
-				push_constant.pad[0] = 0;
-				push_constant.pad[1] = 0;
+				push_constant.exposure_normalization[0] = 0;
+				push_constant.exposure_normalization[1] = 0;
 
 				//process lighting
 				RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
@@ -2906,7 +2919,7 @@ void GI::VoxelGIInstance::debug(RD::DrawListID p_draw_list, RID p_framebuffer, c
 	push_constant.bounds[0] = octree_size.x >> level;
 	push_constant.bounds[1] = octree_size.y >> level;
 	push_constant.bounds[2] = octree_size.z >> level;
-	push_constant.pad = 0;
+	push_constant.exposure_normalization = 0;
 
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
