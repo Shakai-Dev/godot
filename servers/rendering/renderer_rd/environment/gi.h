@@ -161,6 +161,8 @@ public:
 	};
 
 private:
+	RendererSceneRender renderer_scene_render;
+
 	static GI *singleton;
 
 	/* VOXEL GI STORAGE */
@@ -441,7 +443,6 @@ private:
 			float y_mult;
 
 			uint32_t probe_axis_size[3];
-			uint32_t probe_cell_size;
 			uint32_t store_ambient_texture;
 
 			float sky_irradiance_border_size[2];
@@ -602,6 +603,7 @@ public:
 				float pad2[4]; // 4 bytes
 				// Total number of bytes is 48 (aligned)
 			};
+		};
 
 			//cascade blocks are full-size for volume (128^3), half size for albedo/emission
 			float cell_size;
@@ -786,10 +788,9 @@ public:
 		float esm_strength;
 
 		uint32_t pad3[4];
-				
+
 		uint32_t probe_cell_size;
 		uint32_t pad_hd[3]; // Keep 16 byte alignment
-
 
 		struct ProbeCascadeData {
 			float position[3]; //offset of (0,0,0) in world coordinates

@@ -980,9 +980,8 @@ void GI::HDDAGI::update_probes(RID p_env, SkyRD::Sky *p_sky, uint32_t p_view_cou
 
 		for (uint32_t i = 0; i < cascades.size(); i++) {
 			push_constant.cascade = i;
-						push_constant.motion_accum = cascades[i].motion_accum;
+			push_constant.motion_accum = cascades[i].motion_accum;
 			cascades[i].motion_accum = 0; // Clear after use
-
 
 			// Ensure the shader knows exactly how many probes are in this density
 			push_constant.probe_axis_size[0] = probes_per_axis;
@@ -2784,8 +2783,8 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				push_constant.on_mipmap = false;
 				push_constant.propagation = gi->voxel_gi_get_propagation(probe);
 				push_constant.cell_size = cell_size;
-				push_constant.exposure_normalization[0] = 0;
-				push_constant.exposure_normalization[1] = 0;
+				push_constant.pad[0] = 0;
+				push_constant.pad[1] = 0;
 
 				//process lighting
 				RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
@@ -2919,7 +2918,7 @@ void GI::VoxelGIInstance::debug(RD::DrawListID p_draw_list, RID p_framebuffer, c
 	push_constant.bounds[0] = octree_size.x >> level;
 	push_constant.bounds[1] = octree_size.y >> level;
 	push_constant.bounds[2] = octree_size.z >> level;
-	push_constant.exposure_normalization = 0;
+	push_constant.pad = 0;
 
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
