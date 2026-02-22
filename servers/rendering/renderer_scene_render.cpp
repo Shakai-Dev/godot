@@ -721,6 +721,17 @@ RS::EnvironmentHDDAGICascadeFormat RendererSceneRender::environment_get_hddagi_c
 	return environment_storage.environment_get_hddagi_cascade_format(p_env);
 }
 
+int RendererSceneRender::environment_get_hddagi_probe_cell_size(RID p_env) const {
+	if (p_env.is_valid()) {
+		return environment_storage.environment_get_hddagi_probe_cell_size(p_env);
+	}
+	// Fallback to standard 16 voxel spacing
+	// This ensures that if the environment is missing, we don't divide by zero
+	// and use the most memory conservative setting.
+	int fallback = 16;
+	return fallback;
+}
+
 // Adjustments
 
 void RendererSceneRender::environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction) {

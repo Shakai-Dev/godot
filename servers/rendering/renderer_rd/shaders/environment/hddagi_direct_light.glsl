@@ -4,6 +4,8 @@
 
 #VERSION_DEFINES
 
+#include "occ_compute.glsl"
+
 layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
 #define MAX_CASCADES 8
@@ -25,7 +27,7 @@ struct ProcessVoxel {
 	uint position; // xyz 10 bit packed - then 2 extra bits for dynamic and static pending
 	uint albedo_normal; // 0 - 16, 17 - 31 normal in octahedral format
 	uint emission; // RGBE emission
-	uint occlusion; // cached 4 bits occlusion for each 8 neighbouring probes
+	uint occlusion; // cached 4 bits occlusion for each 8 neighboring probes
 };
 
 #define PROCESS_STATIC_PENDING_BIT 0x80000000
@@ -395,24 +397,46 @@ void main() {
 
 	// Add indirect light first, in order to save computation resources
 #ifndef MODE_PROCESS_STATIC
-
 	if (params.bounce_feedback > 0.001) {
 		vec3 feedback = albedo * params.bounce_feedback;
-		ivec3 base_probe = positioni / params.probe_cell_size;
+
+		// Calculate the coordinates of the high density (HD) probes
+		vec3 probe_coords = (position - cascades.data[params.cascade].offset) * cascades.data[params.cascade].to_cell / float(params.probe_cell_size);
+		ivec3 base_probe = ivec3(floor(probe_coords));
+		vec3 trilinear_f = fract(probe_coords); // Used to calculate how far we are between probes
+
 		vec2 probe_tex_to_uv = 1.0 / vec2((LIGHTPROBE_OCT_SIZE + 2) * params.probe_axis_size.x, (LIGHTPROBE_OCT_SIZE + 2) * params.probe_axis_size.y * params.probe_axis_size.z);
 
 		for (int i = 0; i < 8; i++) {
-			float weight = float((occlusionu >> (i * 4)) & 0xF) / float(0xF); //precached occlusion
-			if (weight == 0.0) {
-				// Do not waste time.
+			// Physical Occlusion Weight (from occ_compute)
+			float occ_weight = float((occlusionu >> (i * 4)) & 0xF) / 15.0;
+
+			if (occ_weight == 0.0) {
 				continue;
 			}
-			ivec3 probe = base_probe + ((ivec3(i) >> ivec3(0, 1, 2)) & ivec3(1, 1, 1));
+
+			// Trilinear Interpolation Weight
+			// This smoothly blends the 8 surrounding probes based on voxel position
+			vec3 offset = vec3((ivec3(i) >> ivec3(0, 1, 2)) & ivec3(1));
+			vec3 trilinear_w = mix(1.0 - trilinear_f, trilinear_f, offset);
+			float spatial_weight = trilinear_w.x * trilinear_w.y * trilinear_w.z;
+
+			// Total weight is the product of visibility and spatial position
+			float final_weight = occ_weight * spatial_weight;
+
+			if (final_weight < 0.001) {
+				continue;
+			}
+
+			ivec3 probe = base_probe + ivec3(offset);
 			ivec2 tex_pos = probe_to_tex(probe);
+
+			// Use normal_oct to sample the correct side of the octahedral map
 			vec2 tex_uv = vec2(ivec2(tex_pos * (LIGHTPROBE_OCT_SIZE + 2) + ivec2(1))) + normal_oct * float(LIGHTPROBE_OCT_SIZE);
 			tex_uv *= probe_tex_to_uv;
+
 			vec3 light = texture(sampler2DArray(lightprobe_texture, linear_sampler), vec3(tex_uv, float(params.cascade))).rgb;
-			light_accum += light * weight;
+			light_accum += light * final_weight;
 		}
 
 		light_accum *= feedback;

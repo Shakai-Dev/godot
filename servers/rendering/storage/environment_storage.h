@@ -331,6 +331,7 @@ public:
 	bool environment_get_hddagi_filter_ambient(RID p_env) const;
 	bool environment_get_hddagi_filter_reflection(RID p_env) const;
 	RS::EnvironmentHDDAGICascadeFormat environment_get_hddagi_cascade_format(RID p_env) const;
+	int environment_get_hddagi_probe_cell_size(RID p_env) const;
 
 	// Adjustment
 	void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction);

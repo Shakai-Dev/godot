@@ -252,6 +252,7 @@ public:
 	RS::EnvironmentHDDAGICascadeFormat environment_get_hddagi_cascade_format(RID p_env) const;
 	bool environment_get_hddagi_filter_ambient(RID p_env) const;
 	bool environment_get_hddagi_filter_reflection(RID p_env) const;
+	int environment_get_hddagi_probe_cell_size(RID p_env) const;
 
 	virtual void environment_set_hddagi_frames_to_converge(RS::EnvironmentHDDAGIFramesToConverge p_frames) = 0;
 	virtual void environment_set_hddagi_frames_to_update_light(RS::EnvironmentHDDAGIFramesToUpdateLight p_update) = 0;
