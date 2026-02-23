@@ -681,7 +681,7 @@ public:
 
 		RID occlusion_data[2];
 		RID occlusion_tex[2];
-	
+
 		LocalVector<Cascade> cascades;
 
 		float solid_cell_ratio = 0;
@@ -763,168 +763,168 @@ public:
 		virtual void hddagi_reset() override;
 	};
 
-RS::EnvironmentHDDAGIFramesToConverge hddagi_frames_to_converge = RS::ENV_HDDAGI_CONVERGE_IN_12_FRAMES;
-RS::EnvironmentHDDAGIFramesToUpdateLight hddagi_frames_to_update_light = RS::ENV_HDDAGI_UPDATE_LIGHT_IN_4_FRAMES;
-RS::EnvironmentHDDAGIInactiveProbeFrames inactive_probe_frames = RS::ENV_HDDAGI_INACTIVE_PROBE_4_FRAMES;
+	RS::EnvironmentHDDAGIFramesToConverge hddagi_frames_to_converge = RS::ENV_HDDAGI_CONVERGE_IN_12_FRAMES;
+	RS::EnvironmentHDDAGIFramesToUpdateLight hddagi_frames_to_update_light = RS::ENV_HDDAGI_UPDATE_LIGHT_IN_4_FRAMES;
+	RS::EnvironmentHDDAGIInactiveProbeFrames inactive_probe_frames = RS::ENV_HDDAGI_INACTIVE_PROBE_4_FRAMES;
 
-float hddagi_solid_cell_ratio = 0.5;
-Vector3 hddagi_debug_probe_pos;
-Vector3 hddagi_debug_probe_dir;
-bool hddagi_debug_probe_enabled = false;
-Vector3i hddagi_debug_probe_index;
-uint32_t hddagi_current_version = 0;
+	float hddagi_solid_cell_ratio = 0.5;
+	Vector3 hddagi_debug_probe_pos;
+	Vector3 hddagi_debug_probe_dir;
+	bool hddagi_debug_probe_enabled = false;
+	Vector3i hddagi_debug_probe_index;
+	uint32_t hddagi_current_version = 0;
 
-struct HDDAGIData {
-	int32_t grid_size[3];
-	int32_t max_cascades;
+	struct HDDAGIData {
+		int32_t grid_size[3];
+		int32_t max_cascades;
 
-	float normal_bias;
-	float energy;
-	float y_mult;
-	float reflection_bias;
+		float normal_bias;
+		float energy;
+		float y_mult;
+		float reflection_bias;
 
-	int32_t probe_axis_size[3];
-	float esm_strength;
+		int32_t probe_axis_size[3];
+		float esm_strength;
 
-	uint32_t pad3[4];
+		uint32_t pad3[4];
 
-	uint32_t probe_cell_size;
-	uint32_t pad_hd[3]; // Keep 16 byte alignment
+		uint32_t probe_cell_size;
+		uint32_t pad_hd[3]; // Keep 16 byte alignment
 
-	struct ProbeCascadeData {
-		float position[3]; //offset of (0,0,0) in world coordinates
-		float to_probe;
+		struct ProbeCascadeData {
+			float position[3]; //offset of (0,0,0) in world coordinates
+			float to_probe;
 
-		int32_t region_world_offset[3];
-		float to_cell; // 1/bounds * grid_size
+			int32_t region_world_offset[3];
+			float to_cell; // 1/bounds * grid_size
 
-		uint32_t pad[3];
-		float exposure_normalization;
+			uint32_t pad[3];
+			float exposure_normalization;
 
-		uint32_t pad2[4];
+			uint32_t pad2[4];
+		};
+
+		ProbeCascadeData cascades[GI::HDDAGI::MAX_CASCADES];
 	};
 
-	ProbeCascadeData cascades[GI::HDDAGI::MAX_CASCADES];
-};
+	struct VoxelGIData {
+		float xform[16]; // 64 - 64
 
-struct VoxelGIData {
-	float xform[16]; // 64 - 64
+		float bounds[3]; // 12 - 76
+		float dynamic_range; // 4 - 80
 
-	float bounds[3]; // 12 - 76
-	float dynamic_range; // 4 - 80
+		float bias; // 4 - 84
+		float normal_bias; // 4 - 88
+		uint32_t blend_ambient; // 4 - 92
+		uint32_t mipmaps; // 4 - 96
 
-	float bias; // 4 - 84
-	float normal_bias; // 4 - 88
-	uint32_t blend_ambient; // 4 - 92
-	uint32_t mipmaps; // 4 - 96
+		float pad[3]; // 12 - 108
+		float exposure_normalization; // 4 - 112
+	};
 
-	float pad[3]; // 12 - 108
-	float exposure_normalization; // 4 - 112
-};
+	struct SceneData {
+		float inv_projection[2][16];
+		float cam_transform[16];
+		float eye_offset[2][4];
 
-struct SceneData {
-	float inv_projection[2][16];
-	float cam_transform[16];
-	float eye_offset[2][4];
+		int32_t screen_size[2];
+		float pad1;
+		float pad2;
+	};
 
-	int32_t screen_size[2];
-	float pad1;
-	float pad2;
-};
+	struct PushConstant {
+		uint32_t max_voxel_gi_instances;
+		uint32_t high_quality_vct;
+		uint32_t orthogonal;
+		uint32_t view_index;
 
-struct PushConstant {
-	uint32_t max_voxel_gi_instances;
-	uint32_t high_quality_vct;
-	uint32_t orthogonal;
-	uint32_t view_index;
+		float proj_info[4];
 
-	float proj_info[4];
+		float z_near;
+		float z_far;
+		uint32_t pad;
+		float occlusion_bias;
+	};
 
-	float z_near;
-	float z_far;
-	uint32_t pad;
-	float occlusion_bias;
-};
+	RID hddagi_ubo;
 
-RID hddagi_ubo;
+	enum Group {
+		GROUP_NORMAL,
+		GROUP_VRS,
+	};
 
-enum Group {
-	GROUP_NORMAL,
-	GROUP_VRS,
-};
+	enum Mode {
+		MODE_VOXEL_GI,
+		MODE_VOXEL_GI_WITHOUT_SAMPLER,
+		MODE_HDDAGI,
+		MODE_HDDAGI_BLEND_AMBIENT,
+		MODE_COMBINED,
+		MODE_COMBINED_WITHOUT_SAMPLER,
+		MODE_COMBINED_BLEND_AMBIENT,
+		MODE_COMBINED_BLEND_AMBIENT_WITHOUT_SAMPLER,
+		MODE_MAX
+	};
 
-enum Mode {
-	MODE_VOXEL_GI,
-	MODE_VOXEL_GI_WITHOUT_SAMPLER,
-	MODE_HDDAGI,
-	MODE_HDDAGI_BLEND_AMBIENT,
-	MODE_COMBINED,
-	MODE_COMBINED_WITHOUT_SAMPLER,
-	MODE_COMBINED_BLEND_AMBIENT,
-	MODE_COMBINED_BLEND_AMBIENT_WITHOUT_SAMPLER,
-	MODE_MAX
-};
+	enum ShaderSpecializations {
+		SHADER_SPECIALIZATION_HALF_RES = 1 << 0,
+		SHADER_SPECIALIZATION_USE_FULL_PROJECTION_MATRIX = 1 << 1,
+		SHADER_SPECIALIZATION_USE_VRS = 1 << 2,
+		SHADER_SPECIALIZATION_VARIATIONS = 8,
+	};
 
-enum ShaderSpecializations {
-	SHADER_SPECIALIZATION_HALF_RES = 1 << 0,
-	SHADER_SPECIALIZATION_USE_FULL_PROJECTION_MATRIX = 1 << 1,
-	SHADER_SPECIALIZATION_USE_VRS = 1 << 2,
-	SHADER_SPECIALIZATION_VARIATIONS = 8,
-};
+	RID default_voxel_gi_buffer;
 
-RID default_voxel_gi_buffer;
+	bool half_resolution = false;
+	GiShaderRD shader;
+	PipelineDeferredRD pipelines[SHADER_SPECIALIZATION_VARIATIONS][MODE_MAX];
 
-bool half_resolution = false;
-GiShaderRD shader;
-PipelineDeferredRD pipelines[SHADER_SPECIALIZATION_VARIATIONS][MODE_MAX];
+	enum FilterMode {
+		FILTER_MODE_BILATERAL,
+		FILTER_MODE_BILATERAL_HALF_SIZE,
+		FILTER_MODE_MAX
+	};
+	enum FilterShaderSpecializations {
+		FILTER_SHADER_SPECIALIZATION_HALF_RES = 1 << 0,
+		FILTER_SHADER_SPECIALIZATION_USE_FULL_PROJECTION_MATRIX = 1 << 1,
+		FILTER_SHADER_SPECIALIZATION_VARIATIONS = 4
+	};
 
-enum FilterMode {
-	FILTER_MODE_BILATERAL,
-	FILTER_MODE_BILATERAL_HALF_SIZE,
-	FILTER_MODE_MAX
-};
-enum FilterShaderSpecializations {
-	FILTER_SHADER_SPECIALIZATION_HALF_RES = 1 << 0,
-	FILTER_SHADER_SPECIALIZATION_USE_FULL_PROJECTION_MATRIX = 1 << 1,
-	FILTER_SHADER_SPECIALIZATION_VARIATIONS = 4
-};
+	struct FilterPushConstant {
+		uint32_t orthogonal;
+		float z_near;
+		float z_far;
+		uint32_t view_index;
 
-struct FilterPushConstant {
-	uint32_t orthogonal;
-	float z_near;
-	float z_far;
-	uint32_t view_index;
+		float proj_info[4];
 
-	float proj_info[4];
+		int32_t filter_dir[2];
+		uint32_t pad[2];
+	};
 
-	int32_t filter_dir[2];
-	uint32_t pad[2];
-};
+	HddagiFilterShaderRD filter_shader;
+	RID filter_shader_version;
 
-HddagiFilterShaderRD filter_shader;
-RID filter_shader_version;
+	RID shader_version;
+	PipelineDeferredRD filter_pipelines[FILTER_SHADER_SPECIALIZATION_VARIATIONS][MODE_MAX];
 
-RID shader_version;
-PipelineDeferredRD filter_pipelines[FILTER_SHADER_SPECIALIZATION_VARIATIONS][MODE_MAX];
+	GI();
+	~GI();
 
-GI();
-~GI();
+	void init(RendererRD::SkyRD *p_sky);
+	void free();
 
-void init(RendererRD::SkyRD *p_sky);
-void free();
+	Ref<HDDAGI> create_hddagi(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size);
 
-Ref<HDDAGI> create_hddagi(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size);
+	void setup_voxel_gi_instances(RenderDataRD *p_render_data, Ref<RenderSceneBuffersRD> p_render_buffers, const Transform3D &p_transform, const PagedArray<RID> &p_voxel_gi_instances, uint32_t &r_voxel_gi_instances_used);
+	void process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, RID p_environment, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances);
 
-void setup_voxel_gi_instances(RenderDataRD *p_render_data, Ref<RenderSceneBuffersRD> p_render_buffers, const Transform3D &p_transform, const PagedArray<RID> &p_voxel_gi_instances, uint32_t &r_voxel_gi_instances_used);
-void process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, RID p_environment, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances);
+	RID voxel_gi_instance_create(RID p_base);
+	void voxel_gi_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform);
+	bool voxel_gi_needs_update(RID p_probe) const;
+	void voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RenderGeometryInstance *> &p_dynamic_objects);
+	void debug_voxel_gi(RID p_voxel_gi, RD::DrawListID p_draw_list, RID p_framebuffer, const Projection &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha);
 
-RID voxel_gi_instance_create(RID p_base);
-void voxel_gi_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform);
-bool voxel_gi_needs_update(RID p_probe) const;
-void voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RenderGeometryInstance *> &p_dynamic_objects);
-void debug_voxel_gi(RID p_voxel_gi, RD::DrawListID p_draw_list, RID p_framebuffer, const Projection &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha);
-
-void enable_vrs_shader_group();
+	void enable_vrs_shader_group();
 };
 
 } // namespace RendererRD
