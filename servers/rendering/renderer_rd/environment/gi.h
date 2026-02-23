@@ -770,12 +770,8 @@ uint32_t hddagi_current_version = 0;
 
 /* HDDAGI UPDATE */
 
-int hddagi_get_lightprobe_octahedron_size() const {
-	return HDDAGI::LIGHTPROBE_OCT_SIZE;
-}
-int hddagi_get_occlusion_octahedron_size() const {
-	return HDDAGI::OCCLUSION_OCT_SIZE;
-}
+int hddagi_get_lightprobe_octahedron_size() const;
+int hddagi_get_occlusion_octahedron_size() const;
 
 virtual void hddagi_reset() override;
 
