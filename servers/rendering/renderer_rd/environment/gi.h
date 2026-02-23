@@ -639,130 +639,129 @@ public:
 		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override {}
 		virtual void free_data() override;
 		~HDDAGI();
-	};
 
-	Vector3i cascade_size;
+		Vector3i cascade_size;
 
-	// access to our containers
-	GI *gi = nullptr;
+		// access to our containers
+		GI *gi = nullptr;
 
-	RID render_albedo; //x6, anisotropic
-	RID render_aniso_normals;
-	RID render_emission;
-	RID render_emission_aniso;
+		RID render_albedo; //x6, anisotropic
+		RID render_aniso_normals;
+		RID render_emission;
+		RID render_emission_aniso;
 
-	RID voxel_bits_tex;
-	RID voxel_region_tex;
-	RID voxel_disocclusion_tex;
-	RID voxel_light_tex;
-	RID voxel_light_tex_data;
-	RID voxel_light_neighbour_data;
-	RID region_version_data;
+		RID voxel_bits_tex;
+		RID voxel_region_tex;
+		RID voxel_disocclusion_tex;
+		RID voxel_light_tex;
+		RID voxel_light_tex_data;
+		RID voxel_light_neighbour_data;
+		RID region_version_data;
 
-	RID light_process_buffer_render;
-	RID light_process_dispatch_buffer_render;
+		RID light_process_buffer_render;
+		RID light_process_dispatch_buffer_render;
 
-	RID lightprobe_specular_tex;
-	RID lightprobe_specular_data;
-	RID lightprobe_diffuse_data;
-	RID lightprobe_diffuse_tex;
-	RID lightprobe_ambient_tex;
-	RID lightprobe_diffuse_filter_data;
-	RID lightprobe_diffuse_filter_tex;
-	RID lightprobe_hit_cache_data;
-	RID lightprobe_hit_cache_version_data;
-	RID lightprobe_moving_average;
-	RID lightprobe_moving_average_history;
-	RID lightprobe_neighbour_visibility_map;
-	RID lightprobe_geometry_proximity_map;
-	RID lightprobe_camera_visibility_map;
-	RID lightprobe_process_frame; // 28 bits is frame, upper 4 bits is frames remaining to do full updates (for having updated light when scrolling).
+		RID lightprobe_specular_tex;
+		RID lightprobe_specular_data;
+		RID lightprobe_diffuse_data;
+		RID lightprobe_diffuse_tex;
+		RID lightprobe_ambient_tex;
+		RID lightprobe_diffuse_filter_data;
+		RID lightprobe_diffuse_filter_tex;
+		RID lightprobe_hit_cache_data;
+		RID lightprobe_hit_cache_version_data;
+		RID lightprobe_moving_average;
+		RID lightprobe_moving_average_history;
+		RID lightprobe_neighbour_visibility_map;
+		RID lightprobe_geometry_proximity_map;
+		RID lightprobe_camera_visibility_map;
+		RID lightprobe_process_frame; // 28 bits is frame, upper 4 bits is frames remaining to do full updates (for having updated light when scrolling).
 
-	Vector<RID> lightprobe_camera_buffers;
+		Vector<RID> lightprobe_camera_buffers;
 
-	RID occlusion_data[2];
-	RID occlusion_tex[2];
+		RID occlusion_data[2];
+		RID occlusion_tex[2];
+	
+		LocalVector<Cascade> cascades;
 
-	LocalVector<HDDAGI::Cascade> cascades;
+		float solid_cell_ratio = 0;
+		uint32_t solid_cell_count = 0;
+		uint32_t sampling_cache_buffer_cascade_size = 0;
 
-	float solid_cell_ratio = 0;
-	uint32_t solid_cell_count = 0;
-	uint32_t sampling_cache_buffer_cascade_size = 0;
+		uint32_t update_frame = 0;
+		uint32_t frames_to_converge = 6;
 
-	uint32_t update_frame = 0;
-	uint32_t frames_to_converge = 6;
+		bool using_probe_filter = true;
+		bool using_reflection_filter = true;
+		bool using_ambient_filter = true;
 
-	bool using_probe_filter = true;
-	bool using_reflection_filter = true;
-	bool using_ambient_filter = true;
+		int num_cascades = 6;
+		float min_cell_size = 0;
 
-	int num_cascades = 6;
-	float min_cell_size = 0;
+		RID cascades_ubo;
 
-	RID cascades_ubo;
+		bool uses_occlusion = false;
+		float bounce_feedback = 0.5;
+		bool reads_sky = true;
+		float energy = 1.0;
+		float normal_bias = 1.1;
+		float reflection_bias = 2.0;
+		float probe_bias = 1.1;
+		float occlusion_bias = 0.1;
+		RS::EnvironmentHDDAGICascadeFormat cascade_format = RS::ENV_HDDAGI_CASCADE_FORMAT_16x8x16;
 
-	bool uses_occlusion = false;
-	float bounce_feedback = 0.5;
-	bool reads_sky = true;
-	float energy = 1.0;
-	float normal_bias = 1.1;
-	float reflection_bias = 2.0;
-	float probe_bias = 1.1;
-	float occlusion_bias = 0.1;
-	RS::EnvironmentHDDAGICascadeFormat cascade_format = RS::ENV_HDDAGI_CASCADE_FORMAT_16x8x16;
+		float y_mult = 1.0;
 
-	float y_mult = 1.0;
+		uint32_t version = 0;
+		uint32_t render_pass = 0;
 
-	uint32_t version = 0;
-	uint32_t render_pass = 0;
+		int32_t cascade_dynamic_light_count[MAX_CASCADES]; //used dynamically
 
-	int32_t cascade_dynamic_light_count[HDDAGI::MAX_CASCADES]; //used dynamically
+		RID debug_probes_scene_data_ubo;
 
-	RID debug_probes_scene_data_ubo;
+		RID integrate_process_uniform_set;
+		RID integrate_filter_uniform_set;
 
-	RID integrate_process_uniform_set;
-	RID integrate_filter_uniform_set;
+		/* HDDAGI UPDATE */
 
-	/* HDDAGI UPDATE */
+		int hddagi_get_lightprobe_octahedron_size() const;
+		int hddagi_get_occlusion_octahedron_size() const;
 
-	int hddagi_get_lightprobe_octahedron_size() const;
-	int hddagi_get_occlusion_octahedron_size() const;
+		void create(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size, GI *p_gi);
+		void update(RID p_env, const Vector3 &p_world_position);
+		void update_light();
+		void update_probes(RID p_env, RendererRD::SkyRD::Sky *p_sky, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform);
+		void store_probes();
+		int get_pending_region_count() const;
+		int get_pending_region_data(int p_region, Vector3i &r_local_offset, Vector3i &r_local_size, AABB &r_bounds, Vector3i &r_scroll, Vector3i &r_region_world) const;
+		void update_cascades();
 
-	void create(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size, GI *p_gi);
-	void update(RID p_env, const Vector3 &p_world_position);
-	void update_light();
-	void update_probes(RID p_env, RendererRD::SkyRD::Sky *p_sky, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform);
-	void store_probes();
-	int get_pending_region_count() const;
-	int get_pending_region_data(int p_region, Vector3i &r_local_offset, Vector3i &r_local_size, AABB &r_bounds, Vector3i &r_scroll, Vector3i &r_region_world) const;
-	void update_cascades();
-
-	RID get_lightprobe_diffuse_texture() {
-		if (using_probe_filter) {
-			return lightprobe_diffuse_filter_tex;
-		} else {
-			return lightprobe_diffuse_tex;
+		RID get_lightprobe_diffuse_texture() {
+			if (using_probe_filter) {
+				return lightprobe_diffuse_filter_tex;
+			} else {
+				return lightprobe_diffuse_tex;
+			}
 		}
-	}
 
-	RID get_lightprobe_specular_texture() {
-		return lightprobe_specular_tex;
-	}
+		RID get_lightprobe_specular_texture() {
+			return lightprobe_specular_tex;
+		}
 
-	Vector<RID> get_lightprobe_occlusion_textures() {
-		Vector<RID> ret = { occlusion_tex[0], occlusion_tex[1] };
-		return ret;
-	}
+		Vector<RID> get_lightprobe_occlusion_textures() {
+			Vector<RID> ret = { occlusion_tex[0], occlusion_tex[1] };
+			return ret;
+		}
 
-	void debug_draw(uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture, const Vector<RID> &p_texture_views);
-	void debug_probes(RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms);
+		void debug_draw(uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture, const Vector<RID> &p_texture_views);
+		void debug_probes(RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms);
 
-	void pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_render_data);
-	void render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_region, const PagedArray<RenderGeometryInstance *> &p_instances, float p_exposure_normalization);
-	void render_static_lights(RenderDataRD *p_render_data, Ref<RenderSceneBuffersRD> p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const PagedArray<RID> *p_positional_light_cull_result);
+		void pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_render_data);
+		void render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_region, const PagedArray<RenderGeometryInstance *> &p_instances, float p_exposure_normalization);
+		void render_static_lights(RenderDataRD *p_render_data, Ref<RenderSceneBuffersRD> p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const PagedArray<RID> *p_positional_light_cull_result);
 
-	virtual void hddagi_reset() override;
-};
+		virtual void hddagi_reset() override;
+	};
 
 RS::EnvironmentHDDAGIFramesToConverge hddagi_frames_to_converge = RS::ENV_HDDAGI_CONVERGE_IN_12_FRAMES;
 RS::EnvironmentHDDAGIFramesToUpdateLight hddagi_frames_to_update_light = RS::ENV_HDDAGI_UPDATE_LIGHT_IN_4_FRAMES;
