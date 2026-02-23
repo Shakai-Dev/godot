@@ -786,11 +786,11 @@ void GI::HDDAGI::update(RID p_env, const Vector3 &p_world_position) {
 	update_frame++;
 }
 
-int RendererRD::hddagi_get_lightprobe_octahedron_size const {
+int GI::hddagi_get_lightprobe_octahedron_size const {
 	return GI::HDDAGI::LIGHTPROBE_OCT_SIZE;
 }
 
-int RendererRD::hddagi_get_occlusion_octahedron_size const {
+int GI::hddagi_get_occlusion_octahedron_size const {
 	return GI::HDDAGI::OCCLUSION_OCT_SIZE;
 }
 

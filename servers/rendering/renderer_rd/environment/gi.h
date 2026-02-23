@@ -161,7 +161,7 @@ public:
 	};
 
 private:
-	RendererSceneRender renderer_scene_render;
+	RendererSceneRender *renderer_scene_render = nullptr;
 
 	static GI *singleton;
 
@@ -635,6 +635,10 @@ public:
 
 		RID update_light_uniform_set;
 		RID integrate_uniform_set;
+
+		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override {}
+		virtual void free_data() override;
+		~HDDAGI();
 	};
 
 	Vector3i cascade_size;
@@ -679,7 +683,7 @@ public:
 	RID occlusion_data[2];
 	RID occlusion_tex[2];
 
-	LocalVector<Cascade> cascades;
+	LocalVector<HDDAGI::Cascade> cascades;
 
 	float solid_cell_ratio = 0;
 	uint32_t solid_cell_count = 0;
@@ -719,9 +723,10 @@ public:
 	RID integrate_process_uniform_set;
 	RID integrate_filter_uniform_set;
 
-	virtual void configure(RenderSceneBuffersRD *p_render_buffers) override {}
-	virtual void free_data() override;
-	~HDDAGI();
+	/* HDDAGI UPDATE */
+
+	int hddagi_get_lightprobe_octahedron_size() const;
+	int hddagi_get_occlusion_octahedron_size() const;
 
 	void create(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size, GI *p_gi);
 	void update(RID p_env, const Vector3 &p_world_position);
@@ -755,6 +760,8 @@ public:
 	void pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_render_data);
 	void render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_region, const PagedArray<RenderGeometryInstance *> &p_instances, float p_exposure_normalization);
 	void render_static_lights(RenderDataRD *p_render_data, Ref<RenderSceneBuffersRD> p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const PagedArray<RID> *p_positional_light_cull_result);
+
+	virtual void hddagi_reset() override;
 };
 
 RS::EnvironmentHDDAGIFramesToConverge hddagi_frames_to_converge = RS::ENV_HDDAGI_CONVERGE_IN_12_FRAMES;
@@ -767,13 +774,6 @@ Vector3 hddagi_debug_probe_dir;
 bool hddagi_debug_probe_enabled = false;
 Vector3i hddagi_debug_probe_index;
 uint32_t hddagi_current_version = 0;
-
-/* HDDAGI UPDATE */
-
-int hddagi_get_lightprobe_octahedron_size() const;
-int hddagi_get_occlusion_octahedron_size() const;
-
-virtual void hddagi_reset() override;
 
 struct HDDAGIData {
 	int32_t grid_size[3];
@@ -805,7 +805,7 @@ struct HDDAGIData {
 		uint32_t pad2[4];
 	};
 
-	ProbeCascadeData cascades[HDDAGI::MAX_CASCADES];
+	ProbeCascadeData cascades[GI::HDDAGI::MAX_CASCADES];
 };
 
 struct VoxelGIData {
