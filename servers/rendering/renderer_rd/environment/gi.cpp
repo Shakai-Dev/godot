@@ -469,7 +469,7 @@ void GI::HDDAGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_r
 			tf_neighbour.format = RD::DATA_FORMAT_R32_UINT;
 			tf_neighbour.height *= cascades.size();
 
-			voxel_light_neighbour_data = create_clear_texture(tf_neighbour, "HDDAGI Cascade Light Neighbours");
+			voxel_light_neighbour_data = create_clear_texture(tf_neighbour, "HDDAGI Cascade Light Neighbors");
 		}
 
 		{ // Albedo texture, this is anisotropic (x6).
