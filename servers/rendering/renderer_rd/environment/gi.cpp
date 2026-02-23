@@ -566,7 +566,7 @@ void GI::HDDAGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_r
 		tf_neighbours.depth = 1;
 		tf_neighbours.array_layers = cascades.size();
 		tf_neighbours.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
-		lightprobe_neighbour_visibility_map = create_clear_texture(tf_neighbours, String("HDDAGI Neighbour Visibility Map"));
+		lightprobe_neighbour_visibility_map = create_clear_texture(tf_neighbours, String("HDDAGI Neighbor Visibility Map"));
 
 		RD::TextureFormat tf_geometry_proximity = tf_neighbours;
 
@@ -1765,9 +1765,9 @@ void GI::HDDAGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p
 			for (int i = 0; i < 3; i++) {
 				if (scroll[i] > 0) {
 					push_constant_scroll.limit[i] = cascade_size[i] - scroll[i];
-					push_constant_scroll.offset[i] = 1; //+1 because one extra is rendered below for consistency with neighbouring voxels.
+					push_constant_scroll.offset[i] = 1; //+1 because one extra is rendered below for consistency with neighboring voxels.
 				} else if (scroll[i] < 0) {
-					push_constant_scroll.limit[i] = cascade_size[i] - 1; // -1 because one extra is rendered below for consistency with neighbouring voxels.
+					push_constant_scroll.limit[i] = cascade_size[i] - 1; // -1 because one extra is rendered below for consistency with neighboring voxels.
 					push_constant_scroll.offset[i] = -scroll[i];
 				} else {
 					push_constant_scroll.limit[i] = cascade_size[i];
@@ -1904,7 +1904,7 @@ void GI::HDDAGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p
 		cascades[cascade].dynamic_lights_dirty = true;
 	}
 
-	{ // Probe Neighbours (no barrier needed)
+	{ // Probe Neighbors (no barrier needed)
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->hddagi_shader.preprocess_pipeline[HDDAGIShader::PRE_PROCESS_LIGHTPROBE_NEIGHBOURS].get_rid());
 
 		RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
