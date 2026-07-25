@@ -147,13 +147,16 @@ bool RenderingLightCuller::_prepare_light(const RendererSceneCull::Instance &p_i
 		Plane boundary_planes[5];
 		{
 			constexpr const int MAX_PLANES = 5;
-			// Orthogonal cameras have fixed max shadow distance, determined by the camera far plane.
-			// That must be accounted for, or else GH-120457 happens.
-			// For perspective cameras, shadow far must also never be further than the camera far plane (otherwise things break).
+
 			float camera_far = data.camera_projection.get_z_far();
-			float shadow_far = data.camera_projection.is_orthogonal() ? camera_far : MIN(lsource.range, camera_far);
+			// Cap shadow far plane distance at camera_far so ortho cascades don't blow out
+			float shadow_far = MIN(lsource.range, camera_far);
+
+			// Clamp near plane to >= 0.0f so negative ortho z_near doesn't invert cascade planes
+			real_t start_plane = MAX(0.0f, data.camera_projection.get_z_near());
+
 			real_t plane_distances[MAX_PLANES] = {
-				data.camera_projection.get_z_near(),
+				start_plane,
 				lsource.cascade_splits[0] * shadow_far,
 				lsource.cascade_splits[1] * shadow_far,
 				lsource.cascade_splits[2] * shadow_far,
