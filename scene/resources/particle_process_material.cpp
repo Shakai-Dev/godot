@@ -1059,7 +1059,8 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "		vec3 pos = TRANSFORM[3].xyz;\n";
 	code += "		force = gravity;\n";
 	code += "		// Apply linear acceleration.\n";
-	code += "		force += length(USERDATA1.xyz) > 0.0 ? normalize(USERDATA1.xyz) * physics_params.linear_accel : vec3(0.0);\n";
+	code += "		float vel_len = length(USERDATA1.xyz);\n";
+	code += "		force += vel_len > 0.0001 ? (USERDATA1.xyz / vel_len) * physics_params.linear_accel : vec3(0.0);\n";
 	code += "		// Apply radial acceleration.\n";
 	code += "		vec3 org = EMISSION_TRANSFORM[3].xyz;\n";
 	code += "		vec3 diff = pos - org;\n";
