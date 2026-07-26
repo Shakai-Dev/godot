@@ -5097,8 +5097,9 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_UVEC2:
 		case ShaderLanguage::TYPE_IVEC2: {
 			if (p_uniform.array_size > 0) {
-				pi.type = Variant::PACKED_INT32_ARRAY;
-				// TODO: Handle vector pairs?
+				pi.type = Variant::ARRAY;
+				pi.hint = PROPERTY_HINT_ARRAY_TYPE;
+				pi.hint_string = vformat("%d/%d:", (int)Variant::VECTOR2I, (int)PROPERTY_HINT_NONE);
 			} else {
 				pi.type = Variant::VECTOR2I;
 			}
@@ -5106,8 +5107,9 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_UVEC3:
 		case ShaderLanguage::TYPE_IVEC3: {
 			if (p_uniform.array_size > 0) {
-				pi.type = Variant::PACKED_INT32_ARRAY;
-				// TODO: Handle vector pairs?
+				pi.type = Variant::ARRAY;
+				pi.hint = PROPERTY_HINT_ARRAY_TYPE;
+				pi.hint_string = vformat("%d/%d:", (int)Variant::VECTOR3I, (int)PROPERTY_HINT_NONE);
 			} else {
 				pi.type = Variant::VECTOR3I;
 			}
@@ -5115,8 +5117,9 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_UVEC4:
 		case ShaderLanguage::TYPE_IVEC4: {
 			if (p_uniform.array_size > 0) {
-				pi.type = Variant::PACKED_INT32_ARRAY;
-				// TODO: Handle vector pairs?
+				pi.type = Variant::ARRAY;
+				pi.hint = PROPERTY_HINT_ARRAY_TYPE;
+				pi.hint_string = vformat("%d/%d:", (int)Variant::VECTOR4I, (int)PROPERTY_HINT_NONE);
 			} else {
 				pi.type = Variant::VECTOR4I;
 			}
