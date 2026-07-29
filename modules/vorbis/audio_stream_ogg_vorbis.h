@@ -175,4 +175,6 @@ public:
 		return true;
 	}
 	virtual Ref<AudioSample> generate_sample() const override;
+
+	virtual bool supports_waveform_preview() const override;
 };

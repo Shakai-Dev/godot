@@ -574,6 +574,10 @@ Ref<AudioSample> AudioStreamOggVorbis::generate_sample() const {
 	return sample;
 }
 
+bool AudioStreamOggVorbis::supports_waveform_preview() const {
+	return true;
+}
+
 Ref<AudioStreamOggVorbis> AudioStreamOggVorbis::load_from_buffer(const Vector<uint8_t> &p_stream_data) {
 	Ref<AudioStreamOggVorbis> ogg_vorbis_stream;
 	ogg_vorbis_stream.instantiate();

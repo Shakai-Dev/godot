@@ -334,6 +334,10 @@ Ref<AudioSample> AudioStream::generate_sample() const {
 	return sample;
 }
 
+bool AudioStream::supports_waveform_preview() const {
+	return false;
+}
+
 void AudioStream::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_length"), &AudioStream::get_length);
 	ClassDB::bind_method(D_METHOD("is_monophonic"), &AudioStream::is_monophonic);

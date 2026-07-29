@@ -303,6 +303,10 @@ Ref<AudioSample> AudioStreamMP3::generate_sample() const {
 	return sample;
 }
 
+bool AudioStreamMP3::supports_waveform_preview() const {
+	return true;
+}
+
 Ref<AudioStreamMP3> AudioStreamMP3::load_from_buffer(const Vector<uint8_t> &p_stream_data) {
 	Ref<AudioStreamMP3> mp3_stream;
 	mp3_stream.instantiate();
