@@ -143,6 +143,4 @@ public:
 	virtual Ref<AudioSample> generate_sample() const override;
 
 	virtual void get_parameter_list(List<Parameter> *r_parameters) override;
-
-	virtual bool supports_waveform_preview() const override;
 };

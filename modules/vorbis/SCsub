@@ -39,6 +39,8 @@ if env["builtin_libvorbis"]:
     ]
 
     if env.editor_build:
+        env_vorbis.add_source_files(env.modules_sources, "editor/*.cpp")
+
         thirdparty_sources += [
             "analysis.c",
             "vorbisenc.c",

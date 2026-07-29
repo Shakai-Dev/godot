@@ -653,10 +653,6 @@ Ref<AudioSample> AudioStreamWAV::generate_sample() const {
 	return sample;
 }
 
-bool AudioStreamWAV::supports_waveform_preview() const {
-	return true;
-}
-
 Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_stream_data, const Dictionary &p_options) {
 	// /* STEP 1, READ WAVE FILE */
 

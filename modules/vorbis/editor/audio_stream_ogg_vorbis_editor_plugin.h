@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  audio_stream_ogg_vorbis_editor_plugin.h                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,46 +28,63 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#include "audio_stream_ogg_vorbis.h"
-
-#include "core/io/resource_importer.h"
-#include "core/object/class_db.h"
-
-#ifdef TOOLS_ENABLED
-#include "resource_importer_ogg_vorbis.h"
-
-#include "editor/editor_node.h"
+#include "editor/inspector/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
+#include "scene/audio/audio_stream_player.h"
+#include "scene/gui/button.h"
+#include "scene/gui/color_rect.h"
+#include "scene/gui/label.h"
 
-#include "modules/vorbis/editor/audio_stream_ogg_vorbis_editor_plugin.h"
+class AudioStreamOggVorbisEditor : public ColorRect {
+	GDCLASS(AudioStreamOggVorbisEditor, ColorRect);
 
-static void _editor_init() {
-	Ref<ResourceImporterOggVorbis> ogg_vorbis_importer;
-	ogg_vorbis_importer.instantiate();
-	ResourceFormatImporter::get_singleton()->add_importer(ogg_vorbis_importer);
+	Ref<AudioStream> stream;
 
-	EditorPlugins::add_by_type<AudioStreamOggVorbisEditorPlugin>();
-}
-#endif
+	AudioStreamPlayer *_player = nullptr;
+	ColorRect *_preview = nullptr;
+	Control *_indicator = nullptr;
+	Label *_current_label = nullptr;
+	Label *_duration_label = nullptr;
 
-void initialize_vorbis_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
-		GDREGISTER_CLASS(AudioStreamOggVorbis);
-		GDREGISTER_CLASS(AudioStreamPlaybackOggVorbis);
-	}
+	Button *_play_button = nullptr;
+	Button *_stop_button = nullptr;
 
-#ifdef TOOLS_ENABLED
-	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		GDREGISTER_CLASS(ResourceImporterOggVorbis);
-		GDREGISTER_CLASS(EditorInspectorPluginAudioStreamOggVorbis);
-		GDREGISTER_CLASS(AudioStreamOggVorbisEditorPlugin);
+	float _current = 0;
+	bool _dragging = false;
+	bool _pausing = false;
 
-		EditorNode::add_init_callback(_editor_init);
-	}
-#endif
-}
+protected:
+	void _notification(int p_what);
+	void _preview_changed(ObjectID p_which);
+	void _play();
+	void _stop();
+	void _on_finished();
+	void _draw_preview();
+	void _draw_indicator();
+	void _on_input_indicator(Ref<InputEvent> p_event);
+	void _seek_to(real_t p_x);
+	void _stream_changed();
 
-void uninitialize_vorbis_module(ModuleInitializationLevel p_level) {
-}
+public:
+	void set_stream(const Ref<AudioStream> &p_stream);
+
+	AudioStreamOggVorbisEditor();
+};
+
+class EditorInspectorPluginAudioStreamOggVorbis : public EditorInspectorPlugin {
+	GDCLASS(EditorInspectorPluginAudioStreamOggVorbis, EditorInspectorPlugin);
+	AudioStreamOggVorbisEditor *editor = nullptr;
+
+public:
+	virtual bool can_handle(Object *p_object) override;
+	virtual void parse_begin(Object *p_object) override;
+};
+
+class AudioStreamOggVorbisEditorPlugin : public EditorPlugin {
+	GDCLASS(AudioStreamOggVorbisEditorPlugin, EditorPlugin);
+
+public:
+	AudioStreamOggVorbisEditorPlugin();
+};

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  audio_stream_editor_plugin.cpp                                        */
+/*  audio_stream_mp3_editor_plugin.cpp                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,22 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "audio_stream_editor_plugin.h"
+#include "audio_stream_mp3_editor_plugin.h"
 
 #include "core/object/callable_mp.h"
 #include "editor/audio/audio_stream_preview.h"
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/resources/audio/audio_stream_wav.h"
 #include "servers/rendering/rendering_server.h"
 
-// AudioStreamEditor
+#include "modules/mp3/audio_stream_mp3.h"
 
-void AudioStreamEditor::_notification(int p_what) {
+// AudioStreamMP3Editor
+
+void AudioStreamMP3Editor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			AudioStreamPreviewGenerator::get_singleton()->connect(SNAME("preview_updated"), callable_mp(this, &AudioStreamEditor::_preview_changed));
+			AudioStreamPreviewGenerator::get_singleton()->connect(SNAME("preview_updated"), callable_mp(this, &AudioStreamMP3Editor::_preview_changed));
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			Ref<Font> font = get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts));
@@ -74,7 +75,7 @@ void AudioStreamEditor::_notification(int p_what) {
 	}
 }
 
-void AudioStreamEditor::_draw_preview() {
+void AudioStreamMP3Editor::_draw_preview() {
 	if (stream.is_null()) {
 		return;
 	}
@@ -120,20 +121,20 @@ void AudioStreamEditor::_draw_preview() {
 	RS::get_singleton()->canvas_item_add_multiline(_preview->get_canvas_item(), points, colors);
 }
 
-void AudioStreamEditor::_preview_changed(ObjectID p_which) {
+void AudioStreamMP3Editor::_preview_changed(ObjectID p_which) {
 	if (stream.is_valid() && stream->get_instance_id() == p_which) {
 		_preview->queue_redraw();
 	}
 }
 
-void AudioStreamEditor::_stream_changed() {
+void AudioStreamMP3Editor::_stream_changed() {
 	if (!is_visible()) {
 		return;
 	}
 	queue_redraw();
 }
 
-void AudioStreamEditor::_play() {
+void AudioStreamMP3Editor::_play() {
 	if (_player->is_playing()) {
 		_pausing = true;
 		_player->stop();
@@ -147,7 +148,7 @@ void AudioStreamEditor::_play() {
 	}
 }
 
-void AudioStreamEditor::_stop() {
+void AudioStreamMP3Editor::_stop() {
 	_player->stop();
 	_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	_current = 0;
@@ -155,7 +156,7 @@ void AudioStreamEditor::_stop() {
 	set_process(false);
 }
 
-void AudioStreamEditor::_on_finished() {
+void AudioStreamMP3Editor::_on_finished() {
 	_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	if (!_pausing) {
 		_current = 0;
@@ -166,7 +167,7 @@ void AudioStreamEditor::_on_finished() {
 	set_process(false);
 }
 
-void AudioStreamEditor::_draw_indicator() {
+void AudioStreamMP3Editor::_draw_indicator() {
 	if (stream.is_null()) {
 		return;
 	}
@@ -190,7 +191,7 @@ void AudioStreamEditor::_draw_indicator() {
 	_current_label->set_text(String::num(_current, 2).pad_decimals(2) + " /");
 }
 
-void AudioStreamEditor::_on_input_indicator(Ref<InputEvent> p_event) {
+void AudioStreamMP3Editor::_on_input_indicator(Ref<InputEvent> p_event) {
 	const Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
 		if (mb->is_pressed()) {
@@ -207,16 +208,16 @@ void AudioStreamEditor::_on_input_indicator(Ref<InputEvent> p_event) {
 	}
 }
 
-void AudioStreamEditor::_seek_to(real_t p_x) {
+void AudioStreamMP3Editor::_seek_to(real_t p_x) {
 	_current = p_x / _preview->get_rect().size.x * stream->get_length();
 	_current = CLAMP(_current, 0, stream->get_length());
 	_player->seek(_current);
 	_indicator->queue_redraw();
 }
 
-void AudioStreamEditor::set_stream(const Ref<AudioStream> &p_stream) {
+void AudioStreamMP3Editor::set_stream(const Ref<AudioStream> &p_stream) {
 	if (stream.is_valid()) {
-		stream->disconnect_changed(callable_mp(this, &AudioStreamEditor::_stream_changed));
+		stream->disconnect_changed(callable_mp(this, &AudioStreamMP3Editor::_stream_changed));
 	}
 
 	stream = p_stream;
@@ -224,7 +225,7 @@ void AudioStreamEditor::set_stream(const Ref<AudioStream> &p_stream) {
 		hide();
 		return;
 	}
-	stream->connect_changed(callable_mp(this, &AudioStreamEditor::_stream_changed));
+	stream->connect_changed(callable_mp(this, &AudioStreamMP3Editor::_stream_changed));
 
 	_player->set_stream(stream);
 	_current = 0;
@@ -240,11 +241,11 @@ void AudioStreamEditor::set_stream(const Ref<AudioStream> &p_stream) {
 	queue_redraw();
 }
 
-AudioStreamEditor::AudioStreamEditor() {
+AudioStreamMP3Editor::AudioStreamMP3Editor() {
 	set_custom_minimum_size(Size2(1, 100) * EDSCALE);
 
 	_player = memnew(AudioStreamPlayer);
-	_player->connect(SceneStringName(finished), callable_mp(this, &AudioStreamEditor::_on_finished));
+	_player->connect(SceneStringName(finished), callable_mp(this, &AudioStreamMP3Editor::_on_finished));
 	add_child(_player);
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
@@ -253,13 +254,13 @@ AudioStreamEditor::AudioStreamEditor() {
 
 	_preview = memnew(ColorRect);
 	_preview->set_v_size_flags(SIZE_EXPAND_FILL);
-	_preview->connect(SceneStringName(draw), callable_mp(this, &AudioStreamEditor::_draw_preview));
+	_preview->connect(SceneStringName(draw), callable_mp(this, &AudioStreamMP3Editor::_draw_preview));
 	vbox->add_child(_preview);
 
 	_indicator = memnew(Control);
 	_indicator->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	_indicator->connect(SceneStringName(draw), callable_mp(this, &AudioStreamEditor::_draw_indicator));
-	_indicator->connect(SceneStringName(gui_input), callable_mp(this, &AudioStreamEditor::_on_input_indicator));
+	_indicator->connect(SceneStringName(draw), callable_mp(this, &AudioStreamMP3Editor::_draw_indicator));
+	_indicator->connect(SceneStringName(gui_input), callable_mp(this, &AudioStreamMP3Editor::_on_input_indicator));
 	_preview->add_child(_indicator);
 
 	HBoxContainer *hbox = memnew(HBoxContainer);
@@ -270,7 +271,7 @@ AudioStreamEditor::AudioStreamEditor() {
 	hbox->add_child(_play_button);
 	_play_button->set_flat(true);
 	_play_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	_play_button->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamEditor::_play));
+	_play_button->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamMP3Editor::_play));
 	_play_button->set_shortcut(ED_SHORTCUT("audio_stream_editor/audio_preview_play_pause", TTRC("Audio Preview Play/Pause"), Key::SPACE));
 	_play_button->set_accessibility_name(TTRC("Play"));
 
@@ -278,7 +279,7 @@ AudioStreamEditor::AudioStreamEditor() {
 	hbox->add_child(_stop_button);
 	_stop_button->set_flat(true);
 	_stop_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	_stop_button->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamEditor::_stop));
+	_stop_button->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamMP3Editor::_stop));
 	_stop_button->set_accessibility_name(TTRC("Stop"));
 
 	_current_label = memnew(Label);
@@ -291,25 +292,25 @@ AudioStreamEditor::AudioStreamEditor() {
 	hbox->add_child(_duration_label);
 }
 
-// EditorInspectorPluginAudioStream
+// EditorInspectorPluginAudioStreamMP3
 
-bool EditorInspectorPluginAudioStream::can_handle(Object *p_object) {
-	return Object::cast_to<AudioStreamWAV>(p_object) != nullptr;
+bool EditorInspectorPluginAudioStreamMP3::can_handle(Object *p_object) {
+	return Object::cast_to<AudioStreamMP3>(p_object) != nullptr;
 }
 
-void EditorInspectorPluginAudioStream::parse_begin(Object *p_object) {
+void EditorInspectorPluginAudioStreamMP3::parse_begin(Object *p_object) {
 	AudioStream *stream = Object::cast_to<AudioStream>(p_object);
 
-	editor = memnew(AudioStreamEditor);
+	editor = memnew(AudioStreamMP3Editor);
 	editor->set_stream(Ref<AudioStream>(stream));
 
 	add_custom_control(editor);
 }
 
-// AudioStreamEditorPlugin
+// AudioStreamMP3EditorPlugin
 
-AudioStreamEditorPlugin::AudioStreamEditorPlugin() {
-	Ref<EditorInspectorPluginAudioStream> plugin;
+AudioStreamMP3EditorPlugin::AudioStreamMP3EditorPlugin() {
+	Ref<EditorInspectorPluginAudioStreamMP3> plugin;
 	plugin.instantiate();
 	add_inspector_plugin(plugin);
 }

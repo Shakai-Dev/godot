@@ -179,10 +179,6 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 		return previews[p_stream->get_instance_id()].preview;
 	}
 
-	if (!p_stream->supports_waveform_preview()) {
-		return Ref<AudioStreamPreview>();
-	}
-
 	//no preview exists
 
 	previews[p_stream->get_instance_id()] = Preview();

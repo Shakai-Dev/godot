@@ -214,6 +214,4 @@ public:
 	virtual Ref<AudioSample> generate_sample() const;
 
 	virtual bool is_meta_stream() const { return false; }
-
-	virtual bool supports_waveform_preview() const;
 };

@@ -39,11 +39,16 @@
 #include "resource_importer_mp3.h"
 
 #include "editor/editor_node.h"
+#include "editor/plugins/editor_plugin.h"
+
+#include "modules/mp3/editor/audio_stream_mp3_editor_plugin.h"
 
 static void _editor_init() {
 	Ref<ResourceImporterMP3> mp3_import;
 	mp3_import.instantiate();
 	ResourceFormatImporter::get_singleton()->add_importer(mp3_import);
+
+	EditorPlugins::add_by_type<AudioStreamMP3EditorPlugin>();
 }
 #endif
 
@@ -55,6 +60,8 @@ void initialize_mp3_module(ModuleInitializationLevel p_level) {
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 		GDREGISTER_CLASS(ResourceImporterMP3);
+		GDREGISTER_CLASS(EditorInspectorPluginAudioStreamMP3);
+		GDREGISTER_CLASS(AudioStreamMP3EditorPlugin);
 
 		EditorNode::add_init_callback(_editor_init);
 	}
