@@ -343,6 +343,7 @@ Dictionary Node3DEditor::get_state() const {
 	Dictionary d;
 
 	d["snap_enabled"] = snap_enabled;
+	d["snap_relative"] = snap_relative;
 	d["trackball_enabled"] = trackball_enabled;
 	d["translate_snap"] = snap_translate_value;
 	d["rotate_snap"] = snap_rotate_value;
@@ -426,6 +427,14 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 	if (d.has("snap_enabled")) {
 		snap_enabled = d["snap_enabled"];
 		tool_option_button[TOOL_OPT_USE_SNAP]->set_pressed(d["snap_enabled"]);
+	}
+
+	if (d.has("snap_relative")) {
+		snap_relative = d["snap_relative"];
+		int idx = transform_menu->get_popup()->get_item_index(MENU_SNAP_RELATIVE);
+		if (idx != -1) {
+			transform_menu->get_popup()->set_item_checked(idx, snap_relative);
+		}
 	}
 
 	if (d.has("trackball_enabled")) {
@@ -971,6 +980,11 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 		} break;
 		case MENU_SNAP_TO_FLOOR: {
 			snap_selected_nodes_to_floor();
+		} break;
+		case MENU_SNAP_RELATIVE: {
+			snap_relative = !snap_relative;
+			int idx = transform_menu->get_popup()->get_item_index(MENU_SNAP_RELATIVE);
+			transform_menu->get_popup()->set_item_checked(idx, snap_relative);
 		} break;
 		case MENU_LOCK_SELECTED: {
 			undo_redo->create_action(TTR("Lock Selected"));
@@ -3489,6 +3503,7 @@ Node3DEditor::Node3DEditor() {
 
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/configure_snap", TTRC("Configure Snap...")), MENU_TRANSFORM_CONFIGURE_SNAP);
+	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/snap_relative", TTRC("Snap Relative")), MENU_SNAP_RELATIVE);
 
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed));
 
@@ -3984,7 +3999,13 @@ Size2i Node3DEditor::get_camera_viewport_size(Camera3D *p_camera) {
 Vector3 Node3DEditor::snap_point(Vector3 p_target, Vector3 p_start) const {
 	if (is_snap_enabled()) {
 		real_t snap = get_translate_snap();
-		p_target.snapf(snap);
+		if (snap != 0.0) {
+			if (snap_relative) {
+				return p_start + (p_target - p_start).snappedf(snap);
+			} else {
+				return p_target.snappedf(snap);
+			}
+		}
 	}
 	return p_target;
 }

@@ -1805,7 +1805,15 @@ Transform3D Node3DEditorViewport::_compute_transform(TransformMode p_mode, const
 		}
 		case TRANSFORM_TRANSLATE: {
 			if (spatial_editor->is_snap_enabled()) {
-				p_motion.snapf(p_extra);
+				if (spatial_editor->is_snap_relative()) {
+					p_motion.snapf(p_extra);
+				} else {
+					Vector3 orig_pos = p_original.origin;
+					Vector3 target_pos = orig_pos + p_motion;
+					Vector3 snapped_pos = target_pos.snappedf(p_extra);
+
+					p_motion = snapped_pos - orig_pos;
+				}
 			}
 
 			if (p_local) {
@@ -1815,6 +1823,30 @@ Transform3D Node3DEditorViewport::_compute_transform(TransformMode p_mode, const
 			return p_original.translated(p_motion);
 		}
 		case TRANSFORM_ROTATE: {
+			real_t angle_rad = p_extra;
+
+			if (spatial_editor->is_snap_enabled()) {
+				real_t snap_step = Math::deg_to_rad(spatial_editor->get_rotate_snap());
+				if (snap_step != 0.0) {
+					if (spatial_editor->is_snap_relative()) {
+						angle_rad = Math::snapped(angle_rad, snap_step);
+					} else {
+						// Reconstruct the rotation axis to calculate starting orientation angle
+						Basis parent_global_basis = p_original.basis * p_original_local.basis.inverse();
+						Vector3 axis = (p_local && !p_view_axis) ? p_original_local.basis.xform(p_motion) : parent_global_basis.xform_inv(p_motion);
+						axis.normalize();
+
+						// Get initial angle around axis from original basis
+						real_t initial_angle = p_original.basis.get_euler().dot(axis);
+						real_t target_angle = initial_angle + angle_rad;
+
+						// Snap target angle & compute required delta
+						real_t snapped_angle = Math::snapped(target_angle, snap_step);
+						angle_rad = snapped_angle - initial_angle;
+					}
+				}
+			}
+
 			Transform3D r;
 
 			Basis parent_global_basis = p_original.basis * p_original_local.basis.inverse();
@@ -1827,11 +1859,11 @@ Transform3D Node3DEditorViewport::_compute_transform(TransformMode p_mode, const
 			}
 
 			if (p_local) {
-				r.basis = Basis(axis.normalized(), p_extra) * p_original_local.basis;
+				r.basis = Basis(axis.normalized(), angle_rad) * p_original_local.basis;
 				r.origin = p_original_local.origin;
 			} else {
-				r.basis = parent_global_basis * Basis(axis.normalized(), p_extra) * p_original_local.basis;
-				r.origin = Basis(p_motion, p_extra).xform(p_original.origin - _edit.center) + _edit.center;
+				r.basis = parent_global_basis * Basis(axis.normalized(), angle_rad) * p_original_local.basis;
+				r.origin = Basis(p_motion, angle_rad).xform(p_original.origin - _edit.center) + _edit.center;
 			}
 
 			return r;

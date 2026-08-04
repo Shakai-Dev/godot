@@ -188,6 +188,7 @@ private:
 		MENU_TOOL_USE_TRACKBALL,
 		MENU_TOOL_PRESERVE_CHILDREN_TRANSFORM,
 		MENU_TRANSFORM_CONFIGURE_SNAP,
+		MENU_SNAP_RELATIVE,
 		MENU_TRANSFORM_DIALOG,
 		MENU_VIEW_USE_1_VIEWPORT,
 		MENU_VIEW_USE_2_VIEWPORTS,
@@ -225,6 +226,7 @@ private:
 	ConfirmationDialog *settings_dialog = nullptr;
 
 	bool snap_enabled = false;
+	bool snap_relative = false;
 	bool snap_key_enabled = false;
 	bool vertex_snap_origin_mode = false;
 	bool vertex_snap_use_collision = false;
@@ -413,6 +415,7 @@ public:
 	void set_local_coords_enabled(bool on) const;
 	bool is_preserve_children_transform_enabled() const;
 	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
+	bool is_snap_relative() const { return snap_relative; }
 	bool is_vertex_snap_origin_mode() const { return vertex_snap_origin_mode; }
 	bool is_vertex_snap_use_collision() const;
 	real_t get_translate_snap() const;
